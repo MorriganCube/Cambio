@@ -3,10 +3,37 @@ import java.util.concurrent.*;
 public class HumanPlayer extends Player{
 
     private Scanner sc;
+    
+    private static final BlockingQueue<String> inputQueue = new LinkedBlockingQueue<>();
+    static {
+		new Thread(() -> {
+			Scanner sc = new Scanner(System.in);
+			while(true) {
+				inputQueue.offer(sc.nextLine());
+			}
+		}).start();
+	}
     public HumanPlayer(String name){
         super(name);
         sc = new Scanner(System.in);
     }
+	
+	public String Get_String(){
+		String line = "";
+		try{
+			line = inputQueue.poll(30000, TimeUnit.MILLISECONDS);
+			return line;
+		} catch(Exception e){
+			System.out.println(e);
+			e.printStackTrace();
+		}
+		return line;
+	}
+    
+    public int Get_Int(){
+		int out = Integer.parseInt(Get_String());
+		return out;
+	}
     
     public void Init_memory(){
 		}
@@ -66,7 +93,7 @@ public class HumanPlayer extends Player{
 	
     public int PeekSelf(){
         System.out.println("Which of your cards would you like to see?");
-        int lookAt = sc.nextInt();
+        int lookAt = Get_Int();
         PeekSelf(lookAt);
         return lookAt;
     }
@@ -81,13 +108,13 @@ public class HumanPlayer extends Player{
 
     public String Choose(Card disc){
 		System.out.println("Your turn: ");
-        String choice = sc.nextLine().toLowerCase();
+        String choice = Get_String().toLowerCase();
         return choice;
     }
 
     public Target PeekOpponent(){
         System.out.print("Which opponent do you want to spy on? ");
-        Player target = roster.get(sc.nextInt());
+        Player target = roster.get(Get_Int());
         int index = -1;
         if(target == this){
             System.out.println("Cheeky fucker, pick someone else");
@@ -95,7 +122,7 @@ public class HumanPlayer extends Player{
         }
         else{
             System.out.print("Which card? ");
-            index = sc.nextInt();
+            index = Get_Int();
             System.out.println(target.hand.get(index));
         }
         return (new Target(target, index));
@@ -104,12 +131,12 @@ public class HumanPlayer extends Player{
     public SwapTarget BlindSwap(){
         Player firstplayer = this;
         System.out.print("Your card index: ");
-        int firstindex = sc.nextInt();
+        int firstindex = Get_Int();
 
         System.out.print("Target player: ");
-        Player secondplayer = roster.get(sc.nextInt());
+        Player secondplayer = roster.get(Get_Int());
         System.out.print("Target card index: ");
-        int secondindex = sc.nextInt();
+        int secondindex = Get_Int();
         
         return (new SwapTarget(new Target(this, firstindex), new Target(secondplayer, secondindex)));
         
@@ -117,7 +144,7 @@ public class HumanPlayer extends Player{
 
     public int ChooseDeck(Card input){
         System.out.println("Where do you want to put the " + input.name + "? (D for decline)");
-        String userIn = sc.nextLine();
+        String userIn = Get_String();
         if(userIn.equals("D")){
             return -1;
         }
@@ -141,58 +168,48 @@ public class HumanPlayer extends Player{
 	}
 	
 	public Target CheckInterject(Card disc){
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Future<Target> future = executor.submit(() -> {
-			if(sc.hasNextInt()){
-			int target_player = -1;
-			int target_card = -1;
-			Player play;
-			
-			target_player = sc.nextInt();
-			target_card = sc.nextInt();
-			
-			if(target_player < 0 || target_player >= roster.size()){
-				return null;
-			}
-			else{
-				play = roster.get(target_player);
-			}
-			if(target_card < 0 || target_card >= play.hand.size()){
-				return null;
-			}
-			else{
-				return(new Target(play, target_card));
-			}
-		}
-		else return null;
-		});
+		try{
+		int target_player = -1;
+		int target_card = -1;
+		Player play;
 		
-		try {
-			return future.get(5000, TimeUnit.MILLISECONDS);
-		} catch (TimeoutException e) {
-			future.cancel(true);
+		String line = inputQueue.poll(5000, TimeUnit.MILLISECONDS);
+		
+		if(line != null){
+		target_player = Integer.parseInt(line);
+		target_card = Get_Int();
+			
+		if(target_player < 0 || target_player >= roster.size()){
 			return null;
-		} catch (Exception e){
-			e.printStackTrace();
-			System.exit(0);
-		} finally {
-			//sc.close();
-			this.sc = new Scanner(System.in);
-			executor.shutdown();
+		}
+		else{
+			play = roster.get(target_player);
+		}
+		if(target_card < 0 || target_card >= play.hand.size()){
+			return null;
+		}
+		else{
+			return(new Target(play, target_card));
+		}
 		}
 		return null;
+	} catch(Exception e){
+		System.out.println(e);
+		e.printStackTrace();
+	}
+	return null;
 	}
     
     public SwapTarget RevealAndSwap(){
         System.out.print("First card player: ");
-        Player firstplayer = roster.get(sc.nextInt());
+        Player firstplayer = roster.get(Get_Int());
         System.out.print("First card index: ");
-        int firstindex = sc.nextInt();
+        int firstindex = Get_Int();
 
         System.out.print("Second card player: ");
-        Player secondplayer = roster.get(sc.nextInt());
+        Player secondplayer = roster.get(Get_Int());
         System.out.print("Second card index: ");
-        int secondindex = sc.nextInt();
+        int secondindex = Get_Int();
         
         return (new SwapTarget(new Target(firstplayer, firstindex), new Target(secondplayer, secondindex)));
     }
