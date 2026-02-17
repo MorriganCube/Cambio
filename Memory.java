@@ -8,14 +8,14 @@ public class Memory{
         this.parent = parent;
         this.index = index;
         this.card = card;
-        hard = true;
+        this.hard = true;
     }
     
     public Memory(Profile parent, int index, int value){
 		this.parent = parent;
 		this.index = index;
 		this.card = new Card(value);
-		hard = false;
+		this.hard = false;
 	}
     
     public String toString(){

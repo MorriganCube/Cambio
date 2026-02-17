@@ -82,7 +82,7 @@ public class MachinePlayer extends Player{
 		profiles.get(actor).reeval();
 	}
 	
-	public void SeePullDiscard(Player actor, int index, Card pulled, Card discarded){
+	public void SeePullDiscard(Player actor, int index, Card discarded, Card pulled){
 
 	}
 	
@@ -96,6 +96,40 @@ public class MachinePlayer extends Player{
 	
 	public void SeeReveal(Player actor, Target target, Card revealed){
 
+	}
+	
+	public void SeeInterject(Player actor, Target target, boolean Hit, Card dropped){
+		if(Hit){
+			if(actor == target.player){
+				profiles.get(target.player).SeeDrop(target.index);
+			}
+			else{
+				profiles.get(target.player).ForgetCard(target.index);
+			}
+		}
+		else{
+			profiles.get(actor).SeePickup();
+		}
+	}
+	
+	public Target CheckInterject(Card discard){
+		Target targ = CheckMemory(discard);
+		if(Math.random() < recall_odds_mid){
+			return targ;
+		}
+		return null;
+	}
+	
+	public Target CheckMemory(Card search){
+		for(Player play : roster){
+			Profile prof = profiles.get(play);
+			for(Memory mem : prof.memories){
+				if(mem.card == search){
+					return(new Target(prof.play, mem.index));
+				}
+			}
+		}
+		return null;
 	}
 	
     public String Choose(Card disc){
@@ -210,7 +244,7 @@ public class MachinePlayer extends Player{
             return PeekOpponent();
         }
         else{
-            int cardIndex = (int)(Math.random() * roster.size());
+            int cardIndex = (int)(Math.random() * play.hand.size());
             System.out.println(name + " looks at " + play.name + "'s card " + cardIndex);
             LearnCard(play, cardIndex, play.hand.get(cardIndex), recall_odds_mid);
 			return(new Target(play, cardIndex));
@@ -236,7 +270,7 @@ public class MachinePlayer extends Player{
         
     }
     
-        public int ChooseDiscard(Card input){
+    public int ChooseDiscard(Card input){
         Profile profile = profiles.get(this);
         int best = profile.GuessBest();
         return best;

@@ -76,8 +76,8 @@ public class Card{
     public Card(int face, int suit){
         this.face = face;
         this.suit = suit;
-        CalcVal();
-        CalcName();
+        this.CalcVal();
+        this.CalcName();
     }
 }
 

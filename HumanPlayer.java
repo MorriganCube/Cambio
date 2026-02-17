@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.concurrent.*;
 public class HumanPlayer extends Player{
 
     private Scanner sc;
@@ -6,7 +7,9 @@ public class HumanPlayer extends Player{
         super(name);
         sc = new Scanner(System.in);
     }
-    public void Init_memory(){}
+    
+    public void Init_memory(){
+		}
     
 	public void SeeDraw(Player actor, Card Forgone){
 		System.out.println(actor.name + " pulls a card from the top of the deck");
@@ -20,7 +23,7 @@ public class HumanPlayer extends Player{
 		System.out.println(actor.name + " puts the " + discarded + " in the discard pile");
 	}
 	
-	public void SeePullDiscard(Player actor, int index, Card pulled, Card discarded){
+	public void SeePullDiscard(Player actor, int index, Card discarded, Card pulled){
 		System.out.println(actor.name + " pulls the " + pulled + " from the discard, placing it in place " + index + ", putting the " + discarded + " in the discard pile");
 	}
 	
@@ -30,25 +33,34 @@ public class HumanPlayer extends Player{
 	
 	public void SeeSwap(Player actor, SwapTarget targets){
 		if(targets.source.player == actor){
-			System.out.print(actor + " swaps their card " + targets.source.index  + " with ");
+			System.out.print(actor.name + " swaps their card " + targets.source.index  + " with ");
 		}
 		else{
-			System.out.print(actor + " swaps " + targets.source.player + "'s card " + targets.source.index + " with ");
+			System.out.print(actor.name + " swaps " + targets.source.player.name + "'s card " + targets.source.index + " with ");
 		}
 		if(actor == targets.target.player){
 			System.out.println(" their own card " + targets.target.index);
 		}
 		else{
-			System.out.println(targets.target.player + "'s card " + targets.target.index);
+			System.out.println(targets.target.player.name + "'s card " + targets.target.index);
 		}
 	}
 	
 	public void SeeReveal(Player actor, Target target, Card revealed){
 		if(actor == target.player){
-			System.out.println(actor + " has flipped over their own card " + target.index + " revealing the " + revealed);
+			System.out.println(actor.name + " has flipped over their own card " + target.index + " revealing the " + revealed);
 		}
 		else{
-			System.out.println(actor + " has flipped over " + target.player + "'s card " + target.index + " revealing the " + revealed);
+			System.out.println(actor.name + " has flipped over " + target.player.name + "'s card " + target.index + " revealing the " + revealed);
+		}
+	}
+	
+	public void SeeInterject(Player actor, Target target, boolean Hit, Card dropped){
+		if(Hit){
+			System.out.println(". It's a hit!");
+		}
+		else{
+			System.out.println(". It's a miss! They gain a new card");
 		}
 	}
 	
@@ -68,6 +80,7 @@ public class HumanPlayer extends Player{
     }
 
     public String Choose(Card disc){
+		System.out.println("Your turn: ");
         String choice = sc.nextLine().toLowerCase();
         return choice;
     }
@@ -122,8 +135,52 @@ public class HumanPlayer extends Player{
         int target = ChooseDeck(input);
 		if(target == -1){
 			System.out.println("Invalid choice, you MUST choose");
-		}
 		return(ChooseDiscard(input));
+		}
+		else return target;
+	}
+	
+	public Target CheckInterject(Card disc){
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Future<Target> future = executor.submit(() -> {
+			if(sc.hasNextInt()){
+			int target_player = -1;
+			int target_card = -1;
+			Player play;
+			
+			target_player = sc.nextInt();
+			target_card = sc.nextInt();
+			
+			if(target_player < 0 || target_player >= roster.size()){
+				return null;
+			}
+			else{
+				play = roster.get(target_player);
+			}
+			if(target_card < 0 || target_card >= play.hand.size()){
+				return null;
+			}
+			else{
+				return(new Target(play, target_card));
+			}
+		}
+		else return null;
+		});
+		
+		try {
+			return future.get(5000, TimeUnit.MILLISECONDS);
+		} catch (TimeoutException e) {
+			future.cancel(true);
+			return null;
+		} catch (Exception e){
+			e.printStackTrace();
+			System.exit(0);
+		} finally {
+			//sc.close();
+			this.sc = new Scanner(System.in);
+			executor.shutdown();
+		}
+		return null;
 	}
     
     public SwapTarget RevealAndSwap(){

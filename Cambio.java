@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.lang.Thread;
+import java.util.Collections;
 
 public class Cambio{
     static int HandSize = 4;
@@ -77,6 +78,36 @@ public class Cambio{
 	public static void SeeReveal(Player actor, Target target, Card revealed){
 		for(Player play : roster){
 			play.SeeReveal(actor, target, revealed);
+		}
+	}
+	
+	public static void SeeInterject(Player actor, Target revealed, boolean hit, Card discarded){
+		SeeReveal(actor, revealed, discarded);
+		for(Player play : roster){
+			play.SeeInterject(actor, revealed, hit, discarded);
+		}
+	}
+	
+	public static void CheckInterject(){
+		//System.out.println("Interjections: ");
+		ArrayList<Player> temproster = (ArrayList<Player>) roster.clone();
+		Collections.shuffle(temproster);
+		for(Player play : temproster){
+			Target check = play.CheckInterject(discard.get(0));
+			if(check != null){
+				Card dropped = check.player.hand.get(check.index);
+				if(dropped.face == discard.get(0).face){
+					discard.set(0, dropped);
+					check.player.hand.remove(dropped);
+					SeeInterject(play, check, true, dropped);
+					CheckInterject();
+					return;
+				}
+				else{
+					SeeInterject(play, check, false, dropped);
+					play.hand.add(deck.draw());
+				}
+			}
 		}
 	}
 	
@@ -165,9 +196,9 @@ public class Cambio{
     public static void PlayFromDiscard(){
         int back = ActivePlayer.ChooseDiscard(discard.get(0));
         Card returned = ActivePlayer.hand.get(back);
-        Card pulled = discard.get(0);
+        Card pulled = discard.remove(0);
         ActivePlayer.hand.set(back, pulled);
-        discard.set(0, returned);
+        discard.add(0, returned);
         SeePullDiscard(ActivePlayer, back, pulled);
     }
 
@@ -178,6 +209,7 @@ public class Cambio{
 
     public static void Play(){
         System.out.println();
+        System.out.println(discard.get(0));
         String action;
         if(discard.size() > 0){
             action = ActivePlayer.Choose(discard.get(0));
@@ -187,9 +219,11 @@ public class Cambio{
         }
         if(action.equals("deck")){
             PlayFromDeck();
+			CheckInterject();
         }    
         else if(action.equals("discard")){
             PlayFromDiscard();
+			CheckInterject();
         }
         else if(action.equals("cambio")){
             CallCambio();

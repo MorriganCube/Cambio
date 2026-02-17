@@ -19,6 +19,21 @@ public class Profile{
 		}
 	}
 	
+	public void SeeDrop(int index){
+		for(int n = 0; n < memories.size(); n++){
+			if(memories.get(n).index == index){
+				memories.remove(n);
+			}
+			else if(memories.get(n).index > index){
+				memories.get(n).index--;
+			}
+		}
+	}
+	
+	public void SeePickup(){
+		memories.add(Guess(memories.size()));
+	}
+	
 	public Memory Guess(int index){
 		Memory out = new Memory(this, index, new Card(GuessAverage));
 		return out;

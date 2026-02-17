@@ -29,10 +29,12 @@ public abstract class Player{
 	abstract void SeeDraw(Player actor, Card Forgone);
 	abstract void SeePlaceBlind(Player play, int index, Card discarded);
 	abstract void SeeDecline(Player actor, Card discarded);
-	abstract void SeePullDiscard(Player actor, int index, Card pulled, Card discarded);
+	abstract void SeePullDiscard(Player actor, int index, Card discarded, Card pulled);
 	abstract void SeeCambio(Player actor);
 	abstract void SeeSwap(Player actor, SwapTarget targets);
 	abstract void SeeReveal(Player actor, Target target, Card revealed);
+	abstract void SeeInterject(Player actor, Target target, boolean hit, Card dropped);
+	abstract Target CheckInterject(Card discard);
 	
     abstract void PeekCard(Card input);
     abstract String Choose(Card disc);

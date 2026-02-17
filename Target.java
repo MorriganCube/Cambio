@@ -6,4 +6,9 @@ int index;
 		this.player = player;
 		this.index = index;
 	}
+	
+	public Target(){
+		player = null;
+		index = -1;
+	}
 }
