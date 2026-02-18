@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 public abstract class Player{
+	//An abstract for players. 
+	//TODO: Introduce independent threads
     public ArrayList<Card> hand;
     public ArrayList<Player> roster;
     public String name;
