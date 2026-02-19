@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-public abstract class Player{
+public abstract class Player extends Thread{
 	//An abstract for players. 
 	//TODO: Introduce independent threads
     public ArrayList<Card> hand;

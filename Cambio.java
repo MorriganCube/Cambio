@@ -54,6 +54,7 @@ public class Cambio{
         }
         for(Player play : roster){
             play.Init_memory();
+            play.start();
 		}
         int reveal = init_reveal;
         for(Player play : roster){
