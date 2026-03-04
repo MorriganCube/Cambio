@@ -9,21 +9,29 @@ public class Card{
     public String toString(){
         return name;
     }
-    public Card(){
-        face = 0;
-        suit = 0;
+    public Card(){ //avoid using
+        face = -1;
+        suit = -1;
         value = 0;
         name = "Dummy Card";
     }
     
-    public Card(int value){
+    public Card(int value){ //Approximate Card Value (good for memory)
 		face = value;
-		suit = 0;
+		suit = -1;
 		this.value = value;
 		name = "Unknown Card with value approximately " + value;
 	}
+		
+
+    public Card(int face, int suit){ //Create an Actual Card
+        this.face = face;
+        this.suit = suit;
+        this.CalcVal();
+        this.CalcName();
+    }
 	
-	public void CalcVal(){
+	public void CalcVal(){ //Calculate the value of a card based on its face
         if(face <= 10){
             this.value = this.face;
         }
@@ -38,6 +46,9 @@ public class Card{
 	}
 	
 	public void CalcName(){
+		if(face == 0){
+			this.name = "Joker of ";
+		}
         if(face == 1){
             this.name = "Ace of ";
         }
@@ -70,14 +81,5 @@ public class Card{
 	}
 	
 	
-		
-	
-
-    public Card(int face, int suit){
-        this.face = face;
-        this.suit = suit;
-        this.CalcVal();
-        this.CalcName();
-    }
 }
 

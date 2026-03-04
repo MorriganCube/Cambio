@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 public class Deck{
     public ArrayList<Card> cards;
+    
     public Deck(){
         cards = new ArrayList<Card>();
         for(int n = 1; n <= 13; n++){
@@ -14,10 +15,10 @@ public class Deck{
         Collections.shuffle(cards);
     }
     public Card draw(){
-        Card out = cards.get(0);
-        cards.remove(0);
+        Card out = cards.remove(0);
         return(out);
     }
+    
     public void add(Card input){
         cards.add(input);
     }

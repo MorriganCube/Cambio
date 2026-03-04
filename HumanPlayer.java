@@ -35,7 +35,7 @@ public class HumanPlayer extends Player{
 		return out;
 	}
     
-    public void Init_memory(){
+    public void Init_memory(){ //Left empty because human players don't have machine memory
 		}
     
 	public void SeeDraw(Player actor, Card Forgone){
@@ -96,10 +96,6 @@ public class HumanPlayer extends Player{
         int lookAt = Get_Int();
         PeekSelf(lookAt);
         return lookAt;
-    }
-
-    public void PeekCard(Card input){
-        System.out.println(input);
     }
 
     public void PeekSelf(int index){

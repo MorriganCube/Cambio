@@ -66,7 +66,7 @@ public class Cambio{
     }
     
     //The see block of methods is used to communicate to the players what has happened.
-    
+    //TODO: Make this less bad
     
 	public void SeeDraw(Player actor){ //Shows that the player has taken a card from the deck
 		for(Player play : roster){
@@ -218,6 +218,7 @@ public class Cambio{
     
     public void RevealAndSwap(){									//If they played a Queen, they designate two cards to swap, which are then revealed
 		SwapTarget target = ActivePlayer.RevealAndSwap();
+		SwitchCards(target);
 		SeeSwap(ActivePlayer, target);
 		SeeReveal(ActivePlayer, target.source, target.source.player.hand.get(target.source.index));
 		SeeReveal(ActivePlayer, target.target, target.target.player.hand.get(target.target.index));
@@ -225,7 +226,16 @@ public class Cambio{
 	
 	public void BlindSwap(){										//If they played a Jack, they designate two cards to swap, but they are not revealed
 		SwapTarget target = ActivePlayer.RevealAndSwap();
+		SwitchCards(target);
 		SeeSwap(ActivePlayer, target);
+	}
+	
+	public void SwitchCards(SwapTarget swap){
+		Player source_player = swap.source.player;
+		Player target_player = swap.target.player;
+		Card hold = swap.source.player.hand.get(swap.source.index);
+		source_player.hand.set(swap.source.index, target_player.hand.get(swap.target.index));
+		target_player.hand.set(swap.target.index, hold);
 	}
     
     public void PlayFromDiscard(){								
@@ -275,7 +285,7 @@ public class Cambio{
     }
 
     public void main(String[] args){
-		int human = 1;
+		int human = 1; //Todo: Fix user input, use ArgParse?
 		int machines = 4;
 		//if(args.length <= 0){
 			//machines = 4;

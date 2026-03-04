@@ -18,7 +18,7 @@ public class MachinePlayer extends Player{
     
     int target_score;
     
-    public MachinePlayer(String name){
+    public MachinePlayer(String name){ //default constructor, based on medium skill level
         super(name);
         memory_cap = 10;
         recall_odds_good = 1.0 - base_recall_odds_good;
@@ -29,7 +29,9 @@ public class MachinePlayer extends Player{
         target_score = 8;
     }
 
-    public MachinePlayer(String name, double difficulty){ //difficulty is a modifier on recall odds. 
+    public MachinePlayer(String name, double difficulty){ 
+		//difficulty is a modifier on recall odds. 
+		//Initialize the recall odds values based on the difficulty.
         super(name);
         if(difficulty < 0.1){
             difficulty = 0.1;
@@ -83,7 +85,10 @@ public class MachinePlayer extends Player{
 	}
 	
 	public void SeePullDiscard(Player actor, int index, Card discarded, Card pulled){
-
+		profiles.get(actor).GuessWorst = discarded.value;
+		profiles.get(actor).GuessAverage = discarded.value / 2;
+		profiles.get(actor).LearnCard(index, pulled, recall_odds_bad);
+		profiles.get(actor).reeval();
 	}
 	
 	public void SeeCambio(Player actor){
@@ -91,11 +96,21 @@ public class MachinePlayer extends Player{
 	}
 	
 	public void SeeSwap(Player actor, SwapTarget targets){
-
+		Profile prof1 = profiles.get(targets.source.player);
+		int index1 = targets.source.index;
+		Profile prof2 = profiles.get(targets.target.player);
+		int index2 = targets.target.index;
+		
+		Memory hold = prof1.memories.get(index1);
+		prof1.memories.set(index1, prof2.memories.get(index1));
+		prof2.memories.set(index2, hold);
+		
+		prof1.reeval();
+		prof2.reeval();
 	}
 	
 	public void SeeReveal(Player actor, Target target, Card revealed){
-
+		profiles.get(target.player).LearnCard(target.index, revealed, recall_odds_bad);
 	}
 	
 	public void SeeInterject(Player actor, Target target, boolean Hit, Card dropped){
@@ -145,9 +160,6 @@ public class MachinePlayer extends Player{
             return "cambio";
         }
         return "deck";
-    }
-
-    public void PeekCard(Card input){
     }
 
     public void LearnCard(Player player, int index, Card card, double Odds){

@@ -28,6 +28,7 @@ public abstract class Player{
 		out += hand.toString();
 		return out;
 	}    
+	
 	abstract void SeeDraw(Player actor, Card Forgone);
 	abstract void SeePlaceBlind(Player play, int index, Card discarded);
 	abstract void SeeDecline(Player actor, Card discarded);
@@ -36,9 +37,9 @@ public abstract class Player{
 	abstract void SeeSwap(Player actor, SwapTarget targets);
 	abstract void SeeReveal(Player actor, Target target, Card revealed);
 	abstract void SeeInterject(Player actor, Target target, boolean hit, Card dropped);
+	
 	abstract Target CheckInterject(Card discard);
 	
-    abstract void PeekCard(Card input);
     abstract String Choose(Card disc);
     abstract SwapTarget RevealAndSwap();
     abstract SwapTarget BlindSwap();
