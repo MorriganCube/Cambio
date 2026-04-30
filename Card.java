@@ -4,7 +4,7 @@ public class Card{
     int suit;
     int value;
     String name;
-    boolean hard;
+    //boolean hard;
 
     public String toString(){
         return name;
@@ -27,11 +27,13 @@ public class Card{
     public Card(int face, int suit){ //Create an Actual Card
         this.face = face;
         this.suit = suit;
+        this.name = "";
+        this.value = 0;
         this.CalcVal();
         this.CalcName();
     }
 	
-	public void CalcVal(){ //Calculate the value of a card based on its face
+	private void CalcVal(){ //Calculate the value of a card based on its face
         if(face <= 10){
             this.value = this.face;
         }
@@ -45,7 +47,7 @@ public class Card{
         }
 	}
 	
-	public void CalcName(){
+	private void CalcName(){
 		if(face == 0){
 			this.name = "Joker of ";
 		}

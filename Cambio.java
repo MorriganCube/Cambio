@@ -117,12 +117,13 @@ public class Cambio{
 		}
 	}
 	
+    @SuppressWarnings("unchecked")
 	public void CheckInterject(){ 
 		//Gets called every time the top card on the discard gets changed.
 		
 		// Generates a random ordering to give each player a random chance of getting the interject first. 
 		// TODO: When fully independently threaded players happen, give each a random time.
-		ArrayList<Player> temproster = (ArrayList<Player>) roster.clone();
+        ArrayList<Player> temproster = (ArrayList<Player>) roster.clone();
 		Collections.shuffle(temproster);
 		
 		for(Player play : temproster){
@@ -213,6 +214,7 @@ public class Cambio{
 			ActivePlayer.hand.set(index, ActiveCard);
 			SeePlaceBlind(ActivePlayer, index);
 		}
+        CheckInterject();
     
     }
     
@@ -245,6 +247,7 @@ public class Cambio{
         ActivePlayer.hand.set(back, pulled);
         discard.add(0, returned);
         SeePullDiscard(ActivePlayer, back, pulled);						//Everyone sees it
+        CheckInterject();
     }
 
     public void CallCambio(){									//Sets the Called flag to true, triggering the end of the cycle
@@ -254,8 +257,10 @@ public class Cambio{
 
     public void Play(){											//The active player chooses which action to take
         System.out.println();
+       
         //System.out.println(discard.get(0));
         String action;
+        if(ActivePlayer.hand.size() > 0){
         if(discard.size() > 0){											//Sanity clause to make sure nobody tries to pull a null from the discard
             action = ActivePlayer.Choose(discard.get(0));
         }
@@ -264,17 +269,21 @@ public class Cambio{
         }
         if(action.equals("deck")){										
             PlayFromDeck();
-			CheckInterject();
+			
         }    
         else if(action.equals("discard")){
             PlayFromDiscard();
-			CheckInterject();
+			
         }
         else if(action.equals("cambio")){
             CallCambio();
         }
         else{
             Play();														//If they pick something other than these three, ask again
+        }
+        }
+        else{
+            CallCambio();
         }
         try{
             Thread.sleep(sleeptime);									//Ensure the game doesn't run at lightning speed

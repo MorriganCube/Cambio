@@ -4,21 +4,27 @@ public class Profile{
 	ArrayList<Memory> memories;
 	int GuessWorst;
 	int GuessAverage;
-	
+	double attention;
+
 	public String toString(){
 		return memories.toString();
 	}
 
-	public Profile(Player play){
+	public Profile(Player play, double attention){
 		this.play = play;
 		this.GuessWorst = 13;
 		this.GuessAverage = 7;
+        this.attention = attention;
 		this.memories = new ArrayList<Memory>();
-		for(int n = 0; n < play.hand.size(); n++){
+		
+	}
+
+    public void InitializeMemory(){
+        for(int n = 0; n < play.hand.size(); n++){
 			memories.add(Guess(n));
 		}
-	}
-	
+    }   
+	    
 	public void SeeDrop(int index){
 		for(int n = 0; n < memories.size(); n++){
 			if(memories.get(n).index == index){
@@ -35,7 +41,7 @@ public class Profile{
 	}
 	
 	public Memory Guess(int index){
-		Memory out = new Memory(this, index, new Card(GuessAverage));
+		Memory out = new Memory(this, index, new Card(GuessAverage), 25.0);
 		return out;
 	}
 	
@@ -75,16 +81,12 @@ public class Profile{
 		return best;
 	}
 	
-    public void LearnCard(int index, Card card, double Odds){
-        if(Math.random() < Odds){
-            memories.set(index, new Memory(this, index, card));
-        }
+    public void LearnCard(int index, Card cards, double confidence){
+        memories.set(index, new Memory(this, index, cards, confidence));
     }    
     
-    public void LearnCard(int index, int value, double Odds){
-        if(Math.random() < Odds){
-            memories.set(index, new Memory(this, index, value));
-        }
+    public void LearnCard(int index, int values, double confidence){
+        memories.set(index, new Memory(this, index, values, confidence));
     }
     
     public void ForgetCard(int index){
@@ -102,7 +104,7 @@ public class Profile{
 	public void reeval(){
 		for(int n = 0; n < memories.size(); n++){
 			if(!memories.get(n).hard){
-				memories.set(n, new Memory(this, n, GuessAverage));
+				memories.set(n, new Memory(this, n, GuessAverage, 1000.0)); //TODO: Replace
 			}
 		}
 	}

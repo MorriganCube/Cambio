@@ -2,30 +2,22 @@ import java.lang.Math;
 import java.util.ArrayList;
 import java.util.HashMap;
 public class MachinePlayer extends Player{
-    static double base_recall_odds_good = 0.15;
-    static double base_recall_odds_mid = 0.55;
-    static double base_recall_odds_bad = .85;
-
-    int memory_cap;
-    double recall_odds_good;
-	double recall_odds_mid;
-	double recall_odds_bad;
-    double learn_odds;
-    double forget_odds;
-
     
     HashMap<Player, Profile> profiles;
     
     int target_score;
+    double SelfConfidence;
+    double PeekConfidence;
+    double RevealConfidence;
+    double DiscPlaceConfidence;
+    double GuessConfidence;    
+    double BaseConfidence;
+
+    double SwapLoss;
+    double TimeLoss;
     
     public MachinePlayer(String name){ //default constructor, based on medium skill level
         super(name);
-        memory_cap = 10;
-        recall_odds_good = 1.0 - base_recall_odds_good;
-        recall_odds_mid = .45;
-        recall_odds_bad = .15;
-        learn_odds = .75;
-        forget_odds = .5;
         target_score = 8;
     }
 
@@ -39,25 +31,17 @@ public class MachinePlayer extends Player{
         if(difficulty > 2.0){
             difficulty = 2.0;
         }
-        memory_cap = (int)(10 * difficulty);
-        recall_odds_good = 1.0 - (.15 / difficulty);
-        recall_odds_mid = 1.0 - (.55 / difficulty);
-        recall_odds_bad = 1.0 - (.85 / difficulty);
-        if(recall_odds_good < 0.25){
-            recall_odds_good = .25;
-        }
-        if(recall_odds_mid < .10){
-            recall_odds_mid = .10;
-        }
-        if(recall_odds_bad < 0.0){
-            recall_odds_bad = 0.0;
-        }
+
+        
     }
     
     public void Init_memory(){
         profiles = new HashMap<Player, Profile>();
         for(Player play : roster){
-			profiles.put(play, new Profile(play));
+            Profile newin = new Profile(play, BaseConfidence * (1 + 0.05 * Math.random()));
+            newin.InitializeMemory();
+			profiles.put(play, newin);
+            
 		}
 	}
     
@@ -87,7 +71,6 @@ public class MachinePlayer extends Player{
 	public void SeePullDiscard(Player actor, int index, Card discarded, Card pulled){
 		profiles.get(actor).GuessWorst = discarded.value;
 		profiles.get(actor).GuessAverage = discarded.value / 2;
-		profiles.get(actor).LearnCard(index, pulled, recall_odds_bad);
 		profiles.get(actor).reeval();
 	}
 	
@@ -96,21 +79,21 @@ public class MachinePlayer extends Player{
 	}
 	
 	public void SeeSwap(Player actor, SwapTarget targets){
-		Profile prof1 = profiles.get(targets.source.player);
-		int index1 = targets.source.index;
-		Profile prof2 = profiles.get(targets.target.player);
-		int index2 = targets.target.index;
+		Profile SourceProf = profiles.get(targets.source.player);
+		int SourceIndex = targets.source.index;
+		Profile TargetProf = profiles.get(targets.target.player);
+		int TargetIndex = targets.target.index;
 		
-		Memory hold = prof1.memories.get(index1);
-		prof1.memories.set(index1, prof2.memories.get(index1));
-		prof2.memories.set(index2, hold);
+		Memory hold = SourceProf.memories.get(SourceIndex);
+		SourceProf.memories.set(SourceIndex, TargetProf.memories.get(TargetIndex));
+		TargetProf.memories.set(TargetIndex, hold);
 		
-		prof1.reeval();
-		prof2.reeval();
+		SourceProf.reeval();
+	    TargetProf.reeval();
 	}
 	
 	public void SeeReveal(Player actor, Target target, Card revealed){
-		profiles.get(target.player).LearnCard(target.index, revealed, recall_odds_bad);
+		profiles.get(target.player).LearnCard(target.index, revealed, RevealConfidence);
 	}
 	
 	public void SeeInterject(Player actor, Target target, boolean Hit, Card dropped){
@@ -129,10 +112,7 @@ public class MachinePlayer extends Player{
 	
 	public Target CheckInterject(Card discard){
 		Target targ = CheckMemory(discard);
-		if(Math.random() < recall_odds_mid){
-			return targ;
-		}
-		return null;
+		return targ;
 	}
 	
 	public Target CheckMemory(Card search){
@@ -162,12 +142,12 @@ public class MachinePlayer extends Player{
         return "deck";
     }
 
-    public void LearnCard(Player player, int index, Card card, double Odds){
-        profiles.get(player).LearnCard(index, card, Odds);
+    public void LearnCard(Player player, int index, Card cards, double confidence){
+        profiles.get(player).LearnCard(index, cards, confidence);
     }
     
-    public void LearnCard(Player player, int index, int value, double Odds){
-		profiles.get(player).LearnCard(index, value, Odds);
+    public void LearnCard(Player player, int index, int values, double confidence){
+		profiles.get(player).LearnCard(index, values, confidence);
 	}
     
     public void ForgetCard(Player player, int index){
@@ -186,7 +166,7 @@ public class MachinePlayer extends Player{
         int val = 1000;
         Player target = this;
         for(Player play : roster){
-            if(play != this){
+            if(play != this && play.hand.size() > 0){
 				Profile prof = profiles.get(play);
 				int score = prof.GuessScore();
 				if(score < val){
@@ -245,7 +225,7 @@ public class MachinePlayer extends Player{
     
     public void PeekSelf(int index){
         System.out.println(name + " looks at their card " + index);
-        LearnCard(this, index, hand.get(index), recall_odds_good);
+        LearnCard(this, index, hand.get(index), SelfConfidence);
     }
 
     public Target PeekOpponent(){
@@ -258,7 +238,7 @@ public class MachinePlayer extends Player{
         else{
             int cardIndex = (int)(Math.random() * play.hand.size());
             System.out.println(name + " looks at " + play.name + "'s card " + cardIndex);
-            LearnCard(play, cardIndex, play.hand.get(cardIndex), recall_odds_mid);
+            LearnCard(play, cardIndex, play.hand.get(cardIndex), PeekConfidence);
 			return(new Target(play, cardIndex));
         } 
     }
