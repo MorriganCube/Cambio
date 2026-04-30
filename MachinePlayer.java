@@ -19,6 +19,17 @@ public class MachinePlayer extends Player{
     public MachinePlayer(String name){ //default constructor, based on medium skill level
         super(name);
         target_score = 8;
+
+        double difficulty = 1.0;
+
+        SelfConfidence = difficulty * 1000.0;
+        PeekConfidence = difficulty * 100.0;
+        RevealConfidence = difficulty * 75.0;
+        DiscPlaceConfidence = difficulty * 35.0;
+        GuessConfidence = 0.0;
+        BaseConfidence = 0.0;
+        SwapLoss = 500.0 / difficulty;
+        TimeLoss = 50.0 / difficulty;
     }
 
     public MachinePlayer(String name, double difficulty){ 
@@ -32,6 +43,14 @@ public class MachinePlayer extends Player{
             difficulty = 2.0;
         }
 
+        SelfConfidence = difficulty * 1000.0;
+        PeekConfidence = difficulty * 100.0;
+        RevealConfidence = difficulty * 75.0;
+        DiscPlaceConfidence = difficulty * 35.0;
+        GuessConfidence = 0.0;
+        BaseConfidence = 0.0;
+        SwapLoss = 500.0 / difficulty;
+        TimeLoss = 50.0 / difficulty;
         
     }
     
@@ -116,10 +135,13 @@ public class MachinePlayer extends Player{
 	}
 	
 	public Target CheckMemory(Card search){
+
+        //System.out.println(this.name);
 		for(Player play : roster){
 			Profile prof = profiles.get(play);
 			for(Memory mem : prof.memories){
-				if(mem.card == search){
+                //System.out.println(mem);
+				if(prof.GuessFaceFromMemory(mem) == search.face && mem.confidence >= 150.0){
 					return(new Target(prof.play, mem.index));
 				}
 			}
@@ -145,10 +167,6 @@ public class MachinePlayer extends Player{
     public void LearnCard(Player player, int index, Card cards, double confidence){
         profiles.get(player).LearnCard(index, cards, confidence);
     }
-    
-    public void LearnCard(Player player, int index, int values, double confidence){
-		profiles.get(player).LearnCard(index, values, confidence);
-	}
     
     public void ForgetCard(Player player, int index){
         profiles.get(player).ForgetCard(index);
@@ -255,7 +273,7 @@ public class MachinePlayer extends Player{
     public int ChooseDeck(Card input){
         Profile profile = profiles.get(this);
         int best = profile.GuessBest();
-        if(input.value < profile.GetCard(best)){
+        if(input.value < profile.GuessFromIndex(best)){
             return(best);
         }
         return -1;

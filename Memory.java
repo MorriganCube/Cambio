@@ -24,11 +24,31 @@ public class Memory{
 	}
     
     public String toString(){
-		String out = parent.play.name;
+        String out = "";
+        out += "I am ";
+        out += confidence;
+        out += "% confident that ";
+		out += parent.play.name;
 		out += " has the ";
 		out += card.name;
 		out += " at position ";
 		out += index;
 		return out;
 	}
+
+    public int Recall(){
+        if(Math.random()*100.0 <= confidence){
+            return(card.value);
+        }
+        else{
+            return(-100);
+        }
+    }
+
+    public int RecallFace(){
+        if(Math.random()*100 <= confidence && hard){
+            return(card.face);
+        }
+        return -1;
+    }
 }
